@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-balbalm-mission
+  namespace: devocean
+spec:
+  selector:
+    app: balbalm-mission
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8080
+  type: ClusterIP
