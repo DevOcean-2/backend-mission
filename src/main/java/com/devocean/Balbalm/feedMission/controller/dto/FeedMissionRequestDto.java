@@ -6,6 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class FeedMissionRequestDto {
-	private Long postId;
+	private String hashTag;
 	private Long missionId;
 }
