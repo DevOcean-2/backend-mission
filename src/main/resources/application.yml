@@ -1,1 +1,23 @@
-spring.application.name=Balbalm
+springdoc:
+  packages-to-scan: com.devocean.Balbalm
+  default-consumes-media-type: application/json;charset=UTF-8
+  default-produces-media-type: application/json;charset=UTF-8
+  swagger-ui:
+    path: /
+    disable-swagger-default-url: true
+    display-request-duration: true
+    operations-sorter: alpha
+
+balbalm:
+  external-api:
+    weather:
+      baseUrl: "https://api.openweathermap.org/data/2.5/weather"
+      apiKey: "8382ea9cd8d4683cf74a70d93904c0b3"
+
+spring:
+  profiles:
+    active: prod
+
+server:
+  servlet:
+    context-path: /mission
