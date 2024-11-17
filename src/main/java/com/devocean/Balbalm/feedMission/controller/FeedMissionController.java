@@ -11,6 +11,7 @@ import com.devocean.Balbalm.feedMission.service.FeedMissionService;
 import com.devocean.Balbalm.global.exception.CommonResponse;
 
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/feed-mission")
@@ -19,7 +20,7 @@ public class FeedMissionController {
 	private final FeedMissionService feedMissionService;
 	@PostMapping()
 	public CommonResponse<Boolean> checkMissionComplete(@RequestHeader("Authorization") String token, @RequestBody FeedMissionRequestDto requestDto) {
-		boolean isCompleted = feedMissionService.checkMission(requestDto.getHashTag(), requestDto.getMissionId(), token.substring(7));
+		boolean isCompleted = feedMissionService.checkMission(requestDto.getHashTag(), requestDto.getMissionId(), token.substring(7)).block();
 		return new CommonResponse<>(isCompleted);
 	}
 }

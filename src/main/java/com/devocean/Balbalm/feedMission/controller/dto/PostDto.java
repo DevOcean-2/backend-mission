@@ -1,27 +1,17 @@
 package com.devocean.Balbalm.feedMission.controller.dto;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 public class PostDto {
+	@JsonProperty("post_id")
 	private Long postId;
+	@JsonProperty("user_id")
 	private String userId;
-	private List<String> imageUrls;
-	private String content;
-	private LocalDateTime uploadedAt;
-	private List<LikedBy> likedBy;
-
-
-	@Getter
-	@AllArgsConstructor
-	public static class LikedBy {
-		private String userId;
-		private String nickname;
-		private String profileImageUrl;
-	}
 }
