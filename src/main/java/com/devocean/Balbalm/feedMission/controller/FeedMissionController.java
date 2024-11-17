@@ -19,7 +19,7 @@ public class FeedMissionController {
 	private final FeedMissionService feedMissionService;
 	@PostMapping()
 	public CommonResponse<Boolean> checkMissionComplete(@RequestHeader("Authorization") String token, @RequestBody FeedMissionRequestDto requestDto) {
-		boolean isCompleted = feedMissionService.checkMission(requestDto.getHashTag(), requestDto.getMissionId(), token);
+		boolean isCompleted = feedMissionService.checkMission(requestDto.getHashTag(), requestDto.getMissionId(), token.substring(7));
 		return new CommonResponse<>(isCompleted);
 	}
 }

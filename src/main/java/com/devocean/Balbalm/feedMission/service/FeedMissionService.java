@@ -1,6 +1,7 @@
 package com.devocean.Balbalm.feedMission.service;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -21,24 +22,23 @@ public class FeedMissionService {
 	private final WebClient.Builder webClientBuilder;
 	private final FeedMissionUserRepository feedMissionUserRepository;
 	private final JwtUtil jwtUtil;
-	@Value("${api.external.base-url}")  // yml에서 정의한 값 주입
+	@Value("${api.external.base-url}")
 	private String apiBaseUrl;
 
 	public boolean checkMission(String hashTag, Long missionId, String token) {
-		// 조회한 피드에서 해시태그 정보가 mission_id에 해당하는 해시태그와 같은지
-
-
 		// 피드 조회 API 호출해서 피드 정보 호출
 		String userId = jwtUtil.extractSocialId(token);
+		AtomicBoolean missionComplete = new AtomicBoolean(false);
 		getPostByHashTag(hashTag, token)
 			.subscribe(posts -> {
 				posts.forEach(post -> {
-					// 여기서 userId가 있는지 확인하기
-					System.out.println("Post ID: " + post.getPostId());
-					System.out.println("User ID: " + post.getUserId());
+					if (post.getUserId()==userId) missionComplete.set(true);
 				});
 			});
 
+		if (!missionComplete.get()) {
+			return false;
+		}
 
 		// 같다면 미션 완료 업데이트
 		FeedMissionUser missionStatus = FeedMissionUser.builder()
