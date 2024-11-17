@@ -8,12 +8,6 @@ springdoc:
     display-request-duration: true
     operations-sorter: alpha
 
-balbalm:
-  external-api:
-    weather:
-      baseUrl: "https://api.openweathermap.org/data/2.5/weather"
-      apiKey: "8382ea9cd8d4683cf74a70d93904c0b3"
-
 spring:
   profiles:
     active: prod

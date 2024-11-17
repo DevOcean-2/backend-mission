@@ -26,13 +26,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Make application.yml
-        if: contains(github.ref, 'main')
-        run: |
-          mkdir -p ./src/main/resources
-          cd ./src/main/resources
-          echo "${{ secrets.YML }}" > application.yml
-        shell: bash
+      #- name: Make application.yml
+      #  if: contains(github.ref, 'main')
+      #  run: |
+      #    mkdir -p ./src/main/resources
+      #    cd ./src/main/resources
+      #    echo "${{ secrets.YML }}" > application.yml
+      #  shell: bash
 
       - name: Make application-prod.yml
         if: contains(github.ref, 'main')
