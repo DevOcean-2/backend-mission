@@ -22,4 +22,6 @@ public class FeedMission {
 	private List<HashTag> hashTags;
 	@Column(name = "month")
 	private int month;
+	@Column(name = "year")
+	private int year;
 }

@@ -78,14 +78,15 @@ public class FeedMissionService {
 			.collectList();
 	}
 
-	public MissionResponseDto getMissionByMonth(int month) {
-		FeedMission mission = feedMissionRepository.findByMonth(month)
+	public MissionResponseDto getMissionByMonth(int year, int month) {
+		FeedMission mission = feedMissionRepository.findByYearAndMonth(year, month)
 			.orElseThrow(() -> new RuntimeException("Mission Not Found"));
 
 		List<String> hashtags = mission.getHashTags().stream()
 			.map(hashTag -> hashTag.getName()).collect(Collectors.toList());
 		return MissionResponseDto.builder()
-			.month(month)
+			.year(mission.getYear())
+			.month(mission.getMonth())
 			.hashtag(hashtags)
 			.mission(mission.getContent())
 			.build();

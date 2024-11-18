@@ -27,7 +27,7 @@ public class FeedMissionController {
 	}
 
 	@GetMapping()
-	public CommonResponse<MissionResponseDto> getMissionByMonth(@RequestParam int month) {
-		return new CommonResponse<>(feedMissionService.getMissionByMonth(month));
+	public CommonResponse<MissionResponseDto> getMissionByMonth(@RequestParam int year, @RequestParam int month) {
+		return new CommonResponse<>(feedMissionService.getMissionByMonth(year, month));
 	}
 }
