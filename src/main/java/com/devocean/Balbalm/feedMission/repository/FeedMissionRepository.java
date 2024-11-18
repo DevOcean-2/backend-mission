@@ -10,4 +10,5 @@ import com.devocean.Balbalm.feedMission.entity.FeedMission;
 @Repository
 public interface FeedMissionRepository extends JpaRepository<FeedMission, Long> {
 	Optional<FeedMission> findById(Long id);
+	Optional<FeedMission> findByMonth(int month);
 }

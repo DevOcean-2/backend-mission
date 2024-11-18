@@ -2,12 +2,14 @@ package com.devocean.Balbalm.feedMission.service;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.devocean.Balbalm.feedMission.controller.dto.MissionResponseDto;
 import com.devocean.Balbalm.feedMission.controller.dto.PostDto;
 import com.devocean.Balbalm.feedMission.entity.FeedMission;
 import com.devocean.Balbalm.feedMission.entity.FeedMissionUser;
@@ -74,5 +76,18 @@ public class FeedMissionService {
 			.retrieve()
 			.bodyToFlux(PostDto.class)
 			.collectList();
+	}
+
+	public MissionResponseDto getMissionByMonth(int month) {
+		FeedMission mission = feedMissionRepository.findByMonth(month)
+			.orElseThrow(() -> new RuntimeException("Mission Not Found"));
+
+		List<String> hashtags = mission.getHashTags().stream()
+			.map(hashTag -> hashTag.getName()).collect(Collectors.toList());
+		return MissionResponseDto.builder()
+			.month(month)
+			.hashtag(hashtags)
+			.mission(mission.getContent())
+			.build();
 	}
 }
