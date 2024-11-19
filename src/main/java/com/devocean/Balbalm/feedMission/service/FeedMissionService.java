@@ -89,6 +89,7 @@ public class FeedMissionService {
 			.month(mission.getMonth())
 			.hashtag(hashtags)
 			.mission(mission.getContent())
+			.missionId(mission.getId())
 			.build();
 	}
 }

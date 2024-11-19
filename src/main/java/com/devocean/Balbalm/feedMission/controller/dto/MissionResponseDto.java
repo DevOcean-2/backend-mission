@@ -16,4 +16,5 @@ public class MissionResponseDto {
 	private List<String> hashtag;
 	private int month;
 	private int year;
+	private Long missionId;
 }
