@@ -4,6 +4,7 @@ import com.devocean.Balbalm.global.exception.CommonResponse;
 import com.devocean.Balbalm.notification.domain.enumeration.NotificationType;
 import com.devocean.Balbalm.notification.service.NotificationService;
 
+import com.devocean.Balbalm.notification.usecase.GetNotificationListUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -11,26 +12,34 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 
-@Tag(name = "알림 관련 API", description = "알림 구독 및 취소 API")
+@Tag(name = "알림 관련 API", description = "알림 구독 및 취소, 알림 목록 조회 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/notification")
+@RequestMapping("/api/notification")
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final GetNotificationListUseCase getNotificationListUseCase;
 
     @Operation(summary = "이벤트 구독")
     @GetMapping(value = "/subscribe")
-    public SseEmitter subscribe(@RequestParam("userId") String userId, @RequestParam("notificationType") NotificationType notificationType) {
-        return notificationService.subscribe(userId, notificationType);
+    public SseEmitter subscribe(@RequestHeader("Authorization") String token,
+                                @RequestParam("notificationType") NotificationType notificationType) {
+        return notificationService.subscribe(token.substring(7), notificationType);
     }
 
     @Operation(summary = "이벤트 구독 취소")
     @DeleteMapping(value = "/unsubscribe")
-    public CommonResponse<Void> unSubscribe(
-            @RequestHeader("userId") String userId, @RequestParam("notificationType") NotificationType notificationType
+    public CommonResponse<Void> unSubscribe(@RequestHeader("Authorization") String token,
+            @RequestParam("notificationType") NotificationType notificationType
     ) {
-        notificationService.unsubscribe(userId);
+        notificationService.unsubscribe(token.substring(7));
         return CommonResponse.success();
+    }
+
+    @Operation(summary = "알림 목록 조회")
+    @GetMapping("/list")
+    public CommonResponse<GetNotificationListUseCase.Result> getNotificationList(@RequestHeader("Authorization") String token) {
+        return CommonResponse.success(getNotificationListUseCase.execute(new GetNotificationListUseCase.Command(token.substring(7))));
     }
 }

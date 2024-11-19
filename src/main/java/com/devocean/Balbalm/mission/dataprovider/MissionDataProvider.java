@@ -10,10 +10,16 @@ import com.devocean.Balbalm.notification.domain.enumeration.NotificationType;
 
 public interface MissionDataProvider {
 	List<UserMissionInfo> getMissionList(String userId, LocalDate today);
-	MissionInfo getMissionInfo(String userId, NotificationType notificationType);
-	MissionInfo getMissionInfo(LocalDate today, MissionType missionType);
+	List<UserMissionInfo> getUserMissionInfoList(String userId, NotificationType notificationType);
+	List<MissionInfo> getMissionInfoList(LocalDate today, MissionType missionType);
 	UserMissionInfo getUserMissionInfo(String userId, MissionType missionType, Long missionId);
 	double getMissionDistance(double currentLatitude, double currentLongitude, double targetLatitude, double targetLongitude);
 	void updateLandMarkMissionCount(String userId, Long missionId);
 	void completeTreasureMission(String userId, Long missionId);
+	// 이달의 새로운 미션 조회
+	List<MissionInfo> getNewMissionList(LocalDate today);
+	void updateNewMissionList(List<Long> locationMissionIds);
+	void assignNewTreasureHuntMission(Long missionId, List<String> userIds);
+	void assignNewLandMarkMission(Long missionId, List<String> userIds);
+	void completeAssignNewMission(List<Long> missionIds);
 }

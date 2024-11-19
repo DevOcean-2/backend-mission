@@ -18,17 +18,4 @@ public class NotificationContent {
     private int percent;
     private boolean isCompleted;
 
-    private Long worldId;
-    private Long fieldId;
-    private Long channelId;
-
-    private NotificationContent(Long worldId, Long fieldId, Long channelId) {
-        this.worldId = worldId;
-        this.fieldId = fieldId;
-        this.channelId = channelId;
-    }
-
-    public static NotificationContent create(Long worldId, Long fieldId, Long channelId) {
-        return new NotificationContent(worldId, fieldId, channelId);
-    }
 }

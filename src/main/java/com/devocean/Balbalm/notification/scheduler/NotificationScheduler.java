@@ -1,4 +1,4 @@
-package com.devocean.Balbalm.global.scheduler;
+package com.devocean.Balbalm.notification.scheduler;
 
 import com.devocean.Balbalm.mission.dataprovider.MissionDataProvider;
 import com.devocean.Balbalm.notification.repository.EmitterRepository;
@@ -21,11 +21,11 @@ public class NotificationScheduler {
     /**
      * 보물찾기 미션 정보를 지속적으로 전달
      */
-//    @Scheduled(cron = "*/20 * * * * *")
+    @Scheduled(cron = "*/20 * * * * *")
     public void sendTreasureHuntInfo() {
         log.info("================= start send treasure hunt info =================");
         Set<String> keys = emitterRepository.findAllUserKey();
-        // TODO 각 userId 마다 랜드마크 방문 위치와 현재 위치 거리를 확인
+        // TODO 보물찾기 미션을 완료한 유저(userId)에게 알림 발송
         keys.forEach(notificationService::sendTreasureHuntInfo);
         log.info("================= end send treasure hunt info =================");
     }
@@ -33,11 +33,11 @@ public class NotificationScheduler {
     /**
      * 랜드마크 방문 미션 정보를 지속적으로 전달
      */
-//    @Scheduled(cron = "*/20 * * * * *")
+    @Scheduled(cron = "*/20 * * * * *")
     public void sendLandMarkVisitInfo() {
         log.info("================= start send landmark visit info =================");
         Set<String> keys = emitterRepository.findAllUserKey();
-        // TODO 각 userId 마다 랜드마크 방문 위치와 현재 위치 거리를 확인
+        // TODO 랜드마크 방문 미션을 완료한 유저(userId)에게 알림 발송
         keys.forEach(notificationService::sendLandMarkInfo);
         log.info("================= end send landmark visit info =================");
     }

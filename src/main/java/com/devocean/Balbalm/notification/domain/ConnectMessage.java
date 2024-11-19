@@ -3,10 +3,13 @@ package com.devocean.Balbalm.notification.domain;
 
 import com.devocean.Balbalm.mission.domain.MissionInfo;
 
+import com.devocean.Balbalm.mission.domain.UserMissionInfo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Getter
 @Builder
@@ -14,5 +17,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ConnectMessage {
 	private String userId;
-	private MissionInfo missionInfo;
+//	private MissionInfo missionInfo;
+	List<UserMissionInfo> userMissionInfoList;
 }

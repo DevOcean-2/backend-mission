@@ -54,4 +54,7 @@ public class LocationMission extends BaseEntity {
 
 	@Column(name = "end_date")
 	private LocalDate endDate;
+
+	@Column(name = "complete_assign")
+	private boolean completeAssign;
 }

@@ -2,7 +2,9 @@ package com.devocean.Balbalm.notification.service;
 
 import com.devocean.Balbalm.global.enumeration.ResultCode;
 import com.devocean.Balbalm.global.exception.CommonException;
+import com.devocean.Balbalm.global.util.JwtUtil;
 import com.devocean.Balbalm.mission.dataprovider.MissionDataProvider;
+import com.devocean.Balbalm.mission.domain.UserMissionInfo;
 import com.devocean.Balbalm.mission.domain.enumeration.MissionType;
 import com.devocean.Balbalm.notification.domain.ConnectMessage;
 import com.devocean.Balbalm.mission.domain.MissionInfo;
@@ -21,6 +23,8 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -30,9 +34,11 @@ public class NotificationService {
     private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60;   // 기본 타임아웃 60분
     private final EmitterRepository emitterRepository;
     private final MissionDataProvider missionDataProvider;
+    private final JwtUtil jwtUtil;
 
     @Transactional
-    public SseEmitter subscribe(String userId, NotificationType notificationType) {
+    public SseEmitter subscribe(String token, NotificationType notificationType) {
+        String userId = jwtUtil.extractSocialId(token);
         ConnectMessage connectMessage = connect(userId, notificationType);
         // MissionInfo missionInfo = missionDataProvider.getMissionInfo(userId, notificationType);
         sendMessage(userId, new EventMessage(notificationType, connectMessage));
@@ -48,7 +54,8 @@ public class NotificationService {
 
     private ConnectMessage connect(String userId, NotificationType notificationType) {
 
-        MissionInfo missionInfo = missionDataProvider.getMissionInfo(userId, notificationType);
+//        MissionInfo missionInfo = missionDataProvider.getMissionInfo(userId, notificationType);
+        List<UserMissionInfo> userMissionInfoList = missionDataProvider.getUserMissionInfoList(userId, notificationType);
 
         SseEmitter emitter = new SseEmitter(DEFAULT_TIMEOUT);
         EmitterInfo emitterInfo = new EmitterInfo(userId, emitter);
@@ -58,11 +65,12 @@ public class NotificationService {
         emitter.onCompletion(() -> emitterRepository.deleteById(userId));
         emitter.onTimeout(() -> emitterRepository.deleteById(userId));
 
-        return new ConnectMessage(userId, missionInfo);
+        return new ConnectMessage(userId, userMissionInfoList);
     }
 
     @Transactional
-    public void unsubscribe(String userId) {
+    public void unsubscribe(String token) {
+        String userId = jwtUtil.extractSocialId(token);
         complete(userId);
     }
 
@@ -107,11 +115,16 @@ public class NotificationService {
         if (!ObjectUtils.isEmpty(emitterInfo)) {
             try {
                 NotificationType type = NotificationType.findNotificationType(MissionType.TREASURE_HUNT.name());
-                MissionInfo missionInfo = missionDataProvider.getMissionInfo(userId, type);
+//                MissionInfo missionInfo = missionDataProvider.getMissionInfo(userId, type);
+//                sendMessage(userId,
+//                        new EventMessage(NotificationType.TREASURE_HUNT,
+//                                new MissionInfoUpdateMessage(missionInfo)));
+//                log.info("update missionInfo name {}", missionInfo.getMissionName());
+                List<UserMissionInfo> userMissionInfoList = missionDataProvider.getUserMissionInfoList(userId, type);
                 sendMessage(userId,
                         new EventMessage(NotificationType.TREASURE_HUNT,
-                                new MissionInfoUpdateMessage(missionInfo)));
-                log.info("update missionInfo name {}", missionInfo.getMissionName());
+                                new MissionInfoUpdateMessage(userMissionInfoList)));
+                userMissionInfoList.forEach(userMissionInfo -> log.info("update missionInfo name {}", userMissionInfo.getMissionName()));
             } catch (Exception e) {
                 unsubscribe(userId);
             }
@@ -126,11 +139,16 @@ public class NotificationService {
         if (!ObjectUtils.isEmpty(emitterInfo)) {
             try {
                 NotificationType type = NotificationType.findNotificationType(MissionType.LANDMARK.name());
-                MissionInfo missionInfo = missionDataProvider.getMissionInfo(userId, type);
+//                MissionInfo missionInfo = missionDataProvider.getMissionInfo(userId, type);
+//                sendMessage(userId,
+//                    new EventMessage(NotificationType.LANDMARK,
+//                        new MissionInfoUpdateMessage(missionInfo)));
+//                log.info("update missionInfo name {}", missionInfo.getMissionName());
+                List<UserMissionInfo> userMissionInfoList = missionDataProvider.getUserMissionInfoList(userId, type);
                 sendMessage(userId,
-                    new EventMessage(NotificationType.LANDMARK,
-                        new MissionInfoUpdateMessage(missionInfo)));
-                log.info("update missionInfo name {}", missionInfo.getMissionName());
+                        new EventMessage(NotificationType.LANDMARK,
+                                new MissionInfoUpdateMessage(userMissionInfoList)));
+                userMissionInfoList.forEach(userMissionInfo -> log.info(")update missionInfo name {}", userMissionInfo.getMissionName()));
             } catch (Exception e) {
                 unsubscribe(userId);
             }

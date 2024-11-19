@@ -6,6 +6,8 @@ import static com.devocean.Balbalm.mission.domain.enumeration.TreasureHuntMissio
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.devocean.Balbalm.global.exception.CommonException;
 import org.springframework.stereotype.Component;
@@ -44,46 +46,57 @@ public class LandMarkMissionUseCase implements UseCase<LandMarkMissionUseCase.Co
 		double currentLongitude = input.getLongitude();
 
 		MissionType missionType = input.getMissionType();
-		MissionInfo missionInfo = missionDataProvider.getMissionInfo(today, missionType);
-		Long missionId = missionInfo.getMissionId();
+		List<MissionInfo> missionInfoList = missionDataProvider.getMissionInfoList(today, missionType);
 
-		UserMissionInfo userMissionInfo = missionDataProvider.getUserMissionInfo(userId, missionType, missionInfo.getMissionId());
-		if (userMissionInfo.isComplete()) {
-			throw new CommonException(ALREADY_COMPLETE_MISSION);
+
+		List<Result.Mission> missionList = new ArrayList<>();
+		for (MissionInfo missionInfo : missionInfoList) {
+			Long missionId = missionInfo.getMissionId();
+
+			UserMissionInfo userMissionInfo = missionDataProvider.getUserMissionInfo(userId, missionType, missionInfo.getMissionId());
+			if (userMissionInfo.isComplete()) {
+				throw new CommonException(ALREADY_COMPLETE_MISSION);
+			}
+
+			double distance = missionDataProvider.getMissionDistance(currentLatitude, currentLongitude, missionInfo.getLatitude(), missionInfo.getLongitude());
+			int calDistance = (int) distance;
+
+			LandMarkMissionProgressType progressType = LandMarkMissionProgressType.ZERO;
+			boolean isComplete = false;
+
+			if (calDistance <= HUNDRED.getDistance()) {
+				isComplete = true;
+			} else if (calDistance <= TWO_HUNDRED.getDistance()) {
+
+			} else if (calDistance <= FIVE_HUNDRED.getDistance()) {
+
+			} else {
+
+			}
+
+			// 방문 성공인 경우 방문 성공 횟수를 기록
+			MissionProgressType missionProgressType = MissionProgressType.PROGRESS;
+			if (isComplete) {
+				missionDataProvider.updateLandMarkMissionCount(userId, missionInfo.getMissionId());
+			}
+
+			UserMissionInfo updateUserMissionInfo = missionDataProvider.getUserMissionInfo(userId, missionType, missionId);
+
+			missionList.add(
+					Result.Mission.builder()
+							.isComplete(userMissionInfo.isComplete())
+							.missionProgressType(userMissionInfo.getMissionProgressType())
+							.percent(userMissionInfo.getPercent())
+							.count(userMissionInfo.getCount())
+							.targetCount(missionInfo.getTargetCount())
+							.distance(distance)
+							.build()
+			);
+
 		}
-
-		double distance = missionDataProvider.getMissionDistance(currentLatitude, currentLongitude, missionInfo.getLatitude(), missionInfo.getLongitude());
-		int calDistance = (int) distance;
-
-		LandMarkMissionProgressType progressType = LandMarkMissionProgressType.ZERO;
-		boolean isComplete = false;
-
-		if (calDistance <= HUNDRED.getDistance()) {
-			isComplete = true;
-		} else if (calDistance <= TWO_HUNDRED.getDistance()) {
-
-		} else if (calDistance <= FIVE_HUNDRED.getDistance()) {
-
-		} else {
-
-		}
-
-		// 방문 성공인 경우 방문 성공 횟수를 기록
-		MissionProgressType missionProgressType = MissionProgressType.PROGRESS;
-		if (isComplete) {
-			missionDataProvider.updateLandMarkMissionCount(userId, missionInfo.getMissionId());
-		}
-
-		UserMissionInfo updateUserMissionInfo = missionDataProvider.getUserMissionInfo(userId, missionType, missionId);
-
 		return Result.builder()
-			.isComplete(userMissionInfo.isComplete())
-			.missionProgressType(userMissionInfo.getMissionProgressType())
-			.percent(userMissionInfo.getPercent())
-			.count(userMissionInfo.getCount())
-			.targetCount(missionInfo.getTargetCount())
-			.distance(distance)
-			.build();
+				.missionList(missionList)
+				.build();
 	}
 
 	@Getter
@@ -106,11 +119,22 @@ public class LandMarkMissionUseCase implements UseCase<LandMarkMissionUseCase.Co
 	@AllArgsConstructor
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class Result implements Serializable, UseCase.Result {
-		private boolean isComplete;
-		private MissionProgressType missionProgressType;
-		private int count;   // 방문 성공 횟수
-		private int targetCount;   // 미션 성공을 위한 방문 횟수
-		private int percent;
-		private double distance;
+
+		private List<Mission> missionList;
+
+		@Getter
+		@Setter
+		@Builder
+		@NoArgsConstructor
+		@AllArgsConstructor
+		@JsonIgnoreProperties(ignoreUnknown = true)
+		public static class Mission {
+			private boolean isComplete;
+			private MissionProgressType missionProgressType;
+			private int count;   // 방문 성공 횟수
+			private int targetCount;   // 미션 성공을 위한 방문 횟수
+			private int percent;
+			private double distance;
+		}
 	}
 }
