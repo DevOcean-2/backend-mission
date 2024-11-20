@@ -1,6 +1,8 @@
 package com.devocean.Balbalm.notification.controller;
 
 import com.devocean.Balbalm.global.exception.CommonResponse;
+import com.devocean.Balbalm.global.util.JwtUtil;
+import com.devocean.Balbalm.mission.domain.enumeration.MissionType;
 import com.devocean.Balbalm.notification.domain.enumeration.NotificationType;
 import com.devocean.Balbalm.notification.service.NotificationService;
 
@@ -20,20 +22,23 @@ public class NotificationController {
 
     private final NotificationService notificationService;
     private final GetNotificationListUseCase getNotificationListUseCase;
+    private final JwtUtil jwtUtil;
 
     @Operation(summary = "이벤트 구독")
     @GetMapping(value = "/subscribe")
     public SseEmitter subscribe(@RequestHeader("Authorization") String token,
-                                @RequestParam("notificationType") NotificationType notificationType) {
-        return notificationService.subscribe(token.substring(7), notificationType);
+                                @RequestParam("missionType") MissionType missionType) {
+        String userId = jwtUtil.extractSocialId(token.substring(7));
+        return notificationService.subscribe(userId, missionType);
     }
 
     @Operation(summary = "이벤트 구독 취소")
     @DeleteMapping(value = "/unsubscribe")
     public CommonResponse<Void> unSubscribe(@RequestHeader("Authorization") String token,
-            @RequestParam("notificationType") NotificationType notificationType
+            @RequestParam("missionType") MissionType missionType
     ) {
-        notificationService.unsubscribe(token.substring(7));
+        String userId = jwtUtil.extractSocialId(token.substring(7));
+        notificationService.unsubscribe(userId, missionType);
         return CommonResponse.success();
     }
 

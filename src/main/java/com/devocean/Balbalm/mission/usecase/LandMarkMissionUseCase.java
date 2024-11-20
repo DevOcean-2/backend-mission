@@ -1,7 +1,6 @@
 package com.devocean.Balbalm.mission.usecase;
 
 import static com.devocean.Balbalm.global.enumeration.ResultCode.ALREADY_COMPLETE_MISSION;
-import static com.devocean.Balbalm.mission.domain.enumeration.LandMarkMissionProgressType.*;
 import static com.devocean.Balbalm.mission.domain.enumeration.TreasureHuntMissionProgressType.*;
 
 import java.io.Serializable;
@@ -16,7 +15,6 @@ import com.devocean.Balbalm.global.UseCase;
 import com.devocean.Balbalm.global.util.JwtUtil;
 import com.devocean.Balbalm.mission.dataprovider.MissionDataProvider;
 import com.devocean.Balbalm.mission.domain.UserMissionInfo;
-import com.devocean.Balbalm.mission.domain.enumeration.LandMarkMissionProgressType;
 import com.devocean.Balbalm.mission.domain.enumeration.MissionProgressType;
 import com.devocean.Balbalm.mission.domain.enumeration.MissionType;
 import com.devocean.Balbalm.mission.domain.MissionInfo;
@@ -42,6 +40,7 @@ public class LandMarkMissionUseCase implements UseCase<LandMarkMissionUseCase.Co
 	public Result execute(Command input) {
 		String userId = jwtUtil.extractSocialId(input.getToken());
 		LocalDate today = LocalDate.now();
+
 		double currentLatitude = input.getLatitude();
 		double currentLongitude = input.getLongitude();
 
@@ -61,9 +60,7 @@ public class LandMarkMissionUseCase implements UseCase<LandMarkMissionUseCase.Co
 			double distance = missionDataProvider.getMissionDistance(currentLatitude, currentLongitude, missionInfo.getLatitude(), missionInfo.getLongitude());
 			int calDistance = (int) distance;
 
-			LandMarkMissionProgressType progressType = LandMarkMissionProgressType.ZERO;
 			boolean isComplete = false;
-
 			if (calDistance <= HUNDRED.getDistance()) {
 				isComplete = true;
 			} else if (calDistance <= TWO_HUNDRED.getDistance()) {
@@ -75,19 +72,18 @@ public class LandMarkMissionUseCase implements UseCase<LandMarkMissionUseCase.Co
 			}
 
 			// 방문 성공인 경우 방문 성공 횟수를 기록
-			MissionProgressType missionProgressType = MissionProgressType.PROGRESS;
 			if (isComplete) {
 				missionDataProvider.updateLandMarkMissionCount(userId, missionInfo.getMissionId());
 			}
 
+			// 업데이트된 미션 수행 정보
 			UserMissionInfo updateUserMissionInfo = missionDataProvider.getUserMissionInfo(userId, missionType, missionId);
-
 			missionList.add(
 					Result.Mission.builder()
-							.isComplete(userMissionInfo.isComplete())
-							.missionProgressType(userMissionInfo.getMissionProgressType())
-							.percent(userMissionInfo.getPercent())
-							.count(userMissionInfo.getCount())
+							.isComplete(updateUserMissionInfo.isComplete())
+							.missionProgressType(updateUserMissionInfo.getMissionProgressType())
+							.percent(updateUserMissionInfo.getPercent())
+							.count(updateUserMissionInfo.getCount())
 							.targetCount(missionInfo.getTargetCount())
 							.distance(distance)
 							.build()

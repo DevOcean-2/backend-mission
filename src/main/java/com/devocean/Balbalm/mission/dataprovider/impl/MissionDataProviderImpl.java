@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -89,22 +90,13 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 		return userMissionInfoList;
 	}
 
-//	@Override
-//	public MissionInfo getMissionInfo(LocalDate today, MissionType missionType) {
-//		LocationMission targetMission = locationMissionRepository.findByMissionTypeAndCurrentDate(today, missionType);
-//		if (ObjectUtils.isEmpty(targetMission)) {
-//			throw new CommonException(NOT_FOUND_MISSION);
-//		}
-//		return MissionDataProviderImplMapper.MAPPER.toMissionInfo(targetMission);
-//	}
-
 	@Override
 	public List<MissionInfo> getMissionInfoList(LocalDate today, MissionType missionType) {
-		List<LocationMission> targetMission = locationMissionRepository.findByMissionTypeAndCurrentDate(today, missionType);
-		if (ObjectUtils.isEmpty(targetMission)) {
+		List<LocationMission> targetMissionList = locationMissionRepository.findByMissionTypeAndCurrentDate(today, missionType);
+		if (ObjectUtils.isEmpty(targetMissionList)) {
 			return new ArrayList<>();
 		}
-		return MissionDataProviderImplMapper.MAPPER.toMissionInfoList(targetMission);
+		return targetMissionList.stream().map(MissionDataProviderImplMapper.MAPPER::toMissionInfo).toList();
 	}
 
 	@Override
@@ -154,16 +146,12 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 
 	@Override
 	public void completeTreasureMission(String userId, Long missionId) {
-		LocationMission locationMission = locationMissionRepository.findById(missionId)
+		TreasureMission treasureMission = treasureMissionRepository.findByUserIdAndLocationMissionId(userId, missionId)
 			.orElseThrow(() -> new CommonException(NOT_FOUND_MISSION));
 
-		TreasureMission treasureMission = TreasureMission.builder()
-			.userId(userId)
-			.locationMission(locationMission)
-			.progressType(MissionProgressType.COMPLETE)
-			.isComplete(true)
-			.completeDate(LocalDateTime.now())
-			.build();
+		treasureMission.setProgressType(MissionProgressType.COMPLETE);
+		treasureMission.setComplete(true);
+		treasureMission.setCompleteDate(LocalDateTime.now());
 
 		treasureMissionRepository.save(treasureMission);
 	}
@@ -171,7 +159,7 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 	@Override
 	public List<MissionInfo> getNewMissionList(LocalDate today) {
 		List<LocationMission> newMissionList = locationMissionRepository.findByCurrentDateAndCompleteAssign(today, false);
-		return MissionDataProviderImplMapper.MAPPER.toMissionInfoList(newMissionList);
+		return newMissionList.stream().map(MissionDataProviderImplMapper.MAPPER::toMissionInfo).toList();
 	}
 
 	@Override
@@ -187,13 +175,17 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 		List<TreasureMission> treasureMissionList = new ArrayList<>();
 
 		for (String userId : userIds) {
+			Optional<TreasureMission> optionalTreasureMission = treasureMissionRepository.findByUserIdAndLocationMissionId(userId, locationMissionId);
+			if (optionalTreasureMission.isPresent()) {
+				continue;
+			}
 			treasureMissionList.add(
-					TreasureMission.builder()
-							.userId(userId)
-							.locationMission(targetLocationMission)
-							.progressType(MissionProgressType.PROGRESS)
-							.isComplete(false)
-							.build()
+				TreasureMission.builder()
+					.userId(userId)
+					.locationMission(targetLocationMission)
+					.progressType(MissionProgressType.PROGRESS)
+					.isComplete(false)
+					.build()
 			);
 		}
 
@@ -202,12 +194,17 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 
 	@Override
 	public void assignNewLandMarkMission(Long missionId, List<String> userIds) {
-		LocationMission targetLocationMission = locationMissionRepository.findById(locationMissionId)
+		LocationMission targetLocationMission = locationMissionRepository.findById(missionId)
 				.orElseThrow(() -> new CommonException(NOT_FOUND_MISSION));
 
 		List<LandMarkMission> landMarkMissionList = new ArrayList<>();
 
 		for (String userId : userIds) {
+			LandMarkMission landMarkMission = landMarkMissionRepository.findByUserIdAndLocationMissionId(userId, missionId);
+			if (!ObjectUtils.isEmpty(landMarkMission)) {
+				continue;
+			}
+
 			landMarkMissionList.add(
 					LandMarkMission.builder()
 							.userId(userId)
@@ -230,29 +227,19 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 
 	@Override
 	public void updateLandMarkMissionCount(String userId, Long missionId) {
-		LocationMission locationMission = locationMissionRepository.findById(missionId)
-			.orElseThrow(() -> new CommonException(NOT_FOUND_MISSION));
 		LandMarkMission landMarkMission = landMarkMissionRepository.findByUserIdAndLocationMissionId(userId, missionId);
+		if (!ObjectUtils.isEmpty(landMarkMission)) {
+			throw new CommonException(NOT_FOUND_MISSION);
+		}
 
-		if (ObjectUtils.isEmpty(landMarkMission)) {
-			landMarkMission = LandMarkMission.builder()
-				.userId(userId)
-				.locationMission(locationMission)
-				.count(1)
-				.percent(LandMarkMissionProgressType.FIRST.getPercent())
-				.progressType(MissionProgressType.PROGRESS)
-				.isComplete(false)
-				.build();
-		} else {
-			int plusCount = landMarkMission.getCount() + 1;
-			landMarkMission.setCount(plusCount);
-			landMarkMission.setPercent(LandMarkMissionProgressType.findProgressType(plusCount).getPercent());
+		int plusCount = landMarkMission.getCount() + 1;
+		landMarkMission.setCount(plusCount);
+		landMarkMission.setPercent(LandMarkMissionProgressType.findProgressType(plusCount).getPercent());
 
-			if (plusCount == landMarkMission.getLocationMission().getTargetCount()) {
-				landMarkMission.setProgressType(MissionProgressType.COMPLETE);
-				landMarkMission.setComplete(true);
-				landMarkMission.setCompleteDate(LocalDateTime.now());
-			}
+		if (plusCount == landMarkMission.getLocationMission().getTargetCount()) {
+			landMarkMission.setProgressType(MissionProgressType.COMPLETE);
+			landMarkMission.setComplete(true);
+			landMarkMission.setCompleteDate(LocalDateTime.now());
 		}
 
 		landMarkMissionRepository.save(landMarkMission);
@@ -280,14 +267,14 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 	}
 
 	@Override
-	public List<UserMissionInfo> getUserMissionInfoList(String userId, NotificationType notificationType) {
+	public List<UserMissionInfo> getUserMissionInfoList(String userId, MissionType missionType) {
 		LocalDate today = LocalDate.now();
 		LocalDate startDate = LocalDate.of(today.getYear(), today.getMonth(), 1);
 		LocalDate endDate = LocalDate.of(today.getYear(), today.getMonth(), today.lengthOfMonth());
 
 		List<UserMissionInfo> userMissionInfoList = new ArrayList<>();
 
-		if (NotificationType.TREASURE_HUNT.equals(notificationType)) {
+		if (MissionType.TREASURE_HUNT.equals(missionType)) {
 			List<Long> locationMissionIds = locationMissionRepository.findByMissionTypeAndCurrentDate(today, MissionType.TREASURE_HUNT)
 					.stream().map(LocationMission::getId).toList();
 			List<TreasureMission> treasureMissionList = treasureMissionRepository.findAllByUserIdAndLocationMissionIds(userId, locationMissionIds);
@@ -307,7 +294,7 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 									.build()
 					));
 
-		} else if (NotificationType.LANDMARK.equals(notificationType)) {
+		} else if (MissionType.LANDMARK.equals(missionType)) {
 			List<Long> locationMissionIds = locationMissionRepository.findByMissionTypeAndCurrentDate(today, MissionType.TREASURE_HUNT)
 					.stream().map(LocationMission::getId).toList();
 			List<LandMarkMission> landMarkMissionList = landMarkMissionRepository.findAllByUserIdAndLocationMissionIds(userId, locationMissionIds);
@@ -334,6 +321,8 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 	public interface MissionDataProviderImplMapper {
 		MissionDataProviderImpl.MissionDataProviderImplMapper MAPPER = Mappers.getMapper(MissionDataProviderImpl.MissionDataProviderImplMapper.class);
 		@Mapping(target = "missionId", source = "id")
+		MissionInfo toMissionInfo(LocationMission locationMission);
+
 		List<MissionInfo> toMissionInfoList(List<LocationMission> locationMission);
 	}
 }

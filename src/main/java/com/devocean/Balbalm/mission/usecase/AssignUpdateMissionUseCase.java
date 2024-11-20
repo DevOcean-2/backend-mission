@@ -11,6 +11,7 @@ import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -29,11 +30,16 @@ public class AssignUpdateMissionUseCase implements UseCase<AssignUpdateMissionUs
     @Override
     public Result execute(Command input) {
         List<MissionInfo> newMissionList = missionDataProvider.getNewMissionList(LocalDate.now());
-
+        if (ObjectUtils.isEmpty(newMissionList)) {
+            return new Result();
+        }
         List<UserInfo> userInfoList = userDataProvider.getAllUserList();
+        if (ObjectUtils.isEmpty(userInfoList)) {
+            return new Result();
+        }
         List<String> userIds = userInfoList.stream().map(UserInfo::getUserId).toList();
 
-        // 각 미션마다 돌면서, 모든 유저들에게 새로운 미션 할당 처리
+        // 각 미션마다 돌면서, 모든 유저들에게 새로운 미션 할당 처리 (이미 할당 받은 경우 PASS)
         for (MissionInfo missionInfo : newMissionList) {
             Long locationMissionId = missionInfo.getMissionId();
             MissionType missionType = missionInfo.getMissionType();

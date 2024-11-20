@@ -21,6 +21,6 @@ public interface LocationMissionRepository extends JpaRepository<LocationMission
 	@Query("SELECT m FROM LocationMission m WHERE :currentDate BETWEEN m.startDate AND m.endDate AND m.completeAssign = :completeAssign ")
 	List<LocationMission> findByCurrentDateAndCompleteAssign(@Param("currentDate") LocalDate currentDate, @Param("completeAssign") boolean completeAssign);
 
-	@Query("UPDATE LocationMission m SET m.completeAssign = true WHERE m.id IN missionIds")
+	@Query("UPDATE LocationMission m SET m.completeAssign = true WHERE m.id IN :missionIds")
 	void updateMissionCompleteAssign(@Param("missionIds") List<Long> missionIds);
 }

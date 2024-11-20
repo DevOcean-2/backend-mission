@@ -10,7 +10,7 @@ import com.devocean.Balbalm.notification.domain.enumeration.NotificationType;
 
 public interface MissionDataProvider {
 	List<UserMissionInfo> getMissionList(String userId, LocalDate today);
-	List<UserMissionInfo> getUserMissionInfoList(String userId, NotificationType notificationType);
+	List<UserMissionInfo> getUserMissionInfoList(String userId, MissionType missionType);
 	List<MissionInfo> getMissionInfoList(LocalDate today, MissionType missionType);
 	UserMissionInfo getUserMissionInfo(String userId, MissionType missionType, Long missionId);
 	double getMissionDistance(double currentLatitude, double currentLongitude, double targetLatitude, double targetLongitude);

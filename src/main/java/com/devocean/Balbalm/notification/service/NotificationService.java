@@ -7,11 +7,9 @@ import com.devocean.Balbalm.mission.dataprovider.MissionDataProvider;
 import com.devocean.Balbalm.mission.domain.UserMissionInfo;
 import com.devocean.Balbalm.mission.domain.enumeration.MissionType;
 import com.devocean.Balbalm.notification.domain.ConnectMessage;
-import com.devocean.Balbalm.mission.domain.MissionInfo;
 import com.devocean.Balbalm.notification.domain.MissionInfoUpdateMessage;
 import com.devocean.Balbalm.notification.domain.entity.EmitterInfo;
 import com.devocean.Balbalm.notification.domain.entity.EventMessage;
-import com.devocean.Balbalm.notification.domain.enumeration.NotificationType;
 import com.devocean.Balbalm.notification.repository.EmitterRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -37,11 +35,10 @@ public class NotificationService {
     private final JwtUtil jwtUtil;
 
     @Transactional
-    public SseEmitter subscribe(String token, NotificationType notificationType) {
-        String userId = jwtUtil.extractSocialId(token);
-        ConnectMessage connectMessage = connect(userId, notificationType);
+    public SseEmitter subscribe(String userId, MissionType missionType) {
+        ConnectMessage connectMessage = connect(userId, missionType);
         // MissionInfo missionInfo = missionDataProvider.getMissionInfo(userId, notificationType);
-        sendMessage(userId, new EventMessage(notificationType, connectMessage));
+        sendMessage(userId, new EventMessage(missionType, connectMessage));
         // EmitterInfo emitterInfo = emitterRepository.get(connectMessage.getMissionInfo().getUserId());
         EmitterInfo emitterInfo = emitterRepository.get(userId);
 
@@ -52,10 +49,10 @@ public class NotificationService {
         return emitterInfo.getEmitter();
     }
 
-    private ConnectMessage connect(String userId, NotificationType notificationType) {
+    private ConnectMessage connect(String userId, MissionType missionType) {
 
 //        MissionInfo missionInfo = missionDataProvider.getMissionInfo(userId, notificationType);
-        List<UserMissionInfo> userMissionInfoList = missionDataProvider.getUserMissionInfoList(userId, notificationType);
+        List<UserMissionInfo> userMissionInfoList = missionDataProvider.getUserMissionInfoList(userId, missionType);
 
         SseEmitter emitter = new SseEmitter(DEFAULT_TIMEOUT);
         EmitterInfo emitterInfo = new EmitterInfo(userId, emitter);
@@ -69,9 +66,8 @@ public class NotificationService {
     }
 
     @Transactional
-    public void unsubscribe(String token) {
-        String userId = jwtUtil.extractSocialId(token);
-        complete(userId);
+    public void unsubscribe(String userId, MissionType missionType) {
+        complete(userId, missionType);
     }
 
     private void sendMessage(final String userId, final EventMessage eventMessage) {
@@ -89,9 +85,9 @@ public class NotificationService {
         }
     }
 
-    private void complete(final String userId) {
+    private void complete(final String userId, final MissionType missionType) {
         EmitterInfo emitterInfo = emitterRepository.get(userId);
-        EventMessage<Void> eventMessage = new EventMessage<>(NotificationType.DISCONNECT, null);
+        EventMessage<Void> eventMessage = new EventMessage<>(missionType, null);
 
         if (emitterInfo != null) {
             try {
@@ -114,7 +110,7 @@ public class NotificationService {
 
         if (!ObjectUtils.isEmpty(emitterInfo)) {
             try {
-                NotificationType type = NotificationType.findNotificationType(MissionType.TREASURE_HUNT.name());
+                MissionType type = MissionType.TREASURE_HUNT;
 //                MissionInfo missionInfo = missionDataProvider.getMissionInfo(userId, type);
 //                sendMessage(userId,
 //                        new EventMessage(NotificationType.TREASURE_HUNT,
@@ -122,11 +118,11 @@ public class NotificationService {
 //                log.info("update missionInfo name {}", missionInfo.getMissionName());
                 List<UserMissionInfo> userMissionInfoList = missionDataProvider.getUserMissionInfoList(userId, type);
                 sendMessage(userId,
-                        new EventMessage(NotificationType.TREASURE_HUNT,
+                        new EventMessage(type,
                                 new MissionInfoUpdateMessage(userMissionInfoList)));
                 userMissionInfoList.forEach(userMissionInfo -> log.info("update missionInfo name {}", userMissionInfo.getMissionName()));
             } catch (Exception e) {
-                unsubscribe(userId);
+                unsubscribe(userId, MissionType.TREASURE_HUNT);
             }
         }
     }
@@ -138,7 +134,7 @@ public class NotificationService {
 
         if (!ObjectUtils.isEmpty(emitterInfo)) {
             try {
-                NotificationType type = NotificationType.findNotificationType(MissionType.LANDMARK.name());
+                MissionType type = MissionType.LANDMARK;
 //                MissionInfo missionInfo = missionDataProvider.getMissionInfo(userId, type);
 //                sendMessage(userId,
 //                    new EventMessage(NotificationType.LANDMARK,
@@ -146,11 +142,11 @@ public class NotificationService {
 //                log.info("update missionInfo name {}", missionInfo.getMissionName());
                 List<UserMissionInfo> userMissionInfoList = missionDataProvider.getUserMissionInfoList(userId, type);
                 sendMessage(userId,
-                        new EventMessage(NotificationType.LANDMARK,
+                        new EventMessage(type,
                                 new MissionInfoUpdateMessage(userMissionInfoList)));
                 userMissionInfoList.forEach(userMissionInfo -> log.info(")update missionInfo name {}", userMissionInfo.getMissionName()));
             } catch (Exception e) {
-                unsubscribe(userId);
+                unsubscribe(userId, MissionType.LANDMARK);
             }
         }
     }
