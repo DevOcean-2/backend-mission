@@ -12,13 +12,13 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "notification")
+@Table(name = "mission_notification")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Notification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "notification_id")
+    @Column(name = "mission_notification_id")
     private Long id;
 
     @Column(name = "to_user_id")

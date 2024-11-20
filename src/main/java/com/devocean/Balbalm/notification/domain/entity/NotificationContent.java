@@ -17,5 +17,4 @@ public class NotificationContent {
     private String message;
     private int percent;
     private boolean isCompleted;
-
 }

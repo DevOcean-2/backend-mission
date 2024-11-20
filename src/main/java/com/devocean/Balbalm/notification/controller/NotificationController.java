@@ -3,7 +3,6 @@ package com.devocean.Balbalm.notification.controller;
 import com.devocean.Balbalm.global.exception.CommonResponse;
 import com.devocean.Balbalm.global.util.JwtUtil;
 import com.devocean.Balbalm.mission.domain.enumeration.MissionType;
-import com.devocean.Balbalm.notification.domain.enumeration.NotificationType;
 import com.devocean.Balbalm.notification.service.NotificationService;
 
 import com.devocean.Balbalm.notification.usecase.GetNotificationListUseCase;

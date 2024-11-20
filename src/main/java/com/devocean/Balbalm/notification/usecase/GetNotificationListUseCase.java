@@ -3,16 +3,20 @@ package com.devocean.Balbalm.notification.usecase;
 import com.devocean.Balbalm.global.UseCase;
 import com.devocean.Balbalm.global.util.JwtUtil;
 import com.devocean.Balbalm.notification.dataprovider.NotificationDataProvider;
+import com.devocean.Balbalm.notification.domain.NotificationInfo;
 import com.devocean.Balbalm.notification.domain.entity.NotificationContent;
 import com.devocean.Balbalm.notification.domain.enumeration.NotificationStatus;
 import com.devocean.Balbalm.notification.domain.enumeration.NotificationType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.mapstruct.Mapper;
+import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Component;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -25,8 +29,10 @@ public class GetNotificationListUseCase implements UseCase<GetNotificationListUs
     @Override
     public Result execute(Command input) {
         String userId = jwtUtil.extractSocialId(input.getToken());
-        notificationDataProvider.getNotificationList(userId);
-        return null;
+        List<NotificationInfo> notificationList = notificationDataProvider.getNotificationList(userId);
+        return Result.builder()
+                .notificationList(GetNotificationListUseCaseMapper.MAPPER.toNotificationList(notificationList))
+                .build();
     }
 
     @Getter
@@ -54,10 +60,26 @@ public class GetNotificationListUseCase implements UseCase<GetNotificationListUs
         @Serial
         private static final long serialVersionUID = 1910516317000499984L;
 
-        private Long id;
-        private String toUserId;
-        private NotificationType notificationType;
-        private NotificationContent notificationContent;
-        private NotificationStatus notificationStatus;
+        private List<Notification> notificationList;
+
+        @Getter
+        @Setter
+        @Builder
+        @NoArgsConstructor
+        @AllArgsConstructor
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Notification{
+            private Long id;
+            private String toUserId;
+            private NotificationType notificationType;
+            private NotificationContent notificationContent;
+            private NotificationStatus notificationStatus;
+        }
+    }
+
+    @Mapper
+    public interface GetNotificationListUseCaseMapper {
+        GetNotificationListUseCase.GetNotificationListUseCaseMapper MAPPER = Mappers.getMapper(GetNotificationListUseCase.GetNotificationListUseCaseMapper.class);
+        List<Result.Notification> toNotificationList(List<NotificationInfo> notificationInfoList);
     }
 }

@@ -27,8 +27,6 @@ import com.devocean.Balbalm.mission.repository.LandMarkMissionRepository;
 import com.devocean.Balbalm.mission.repository.LocationMissionRepository;
 import com.devocean.Balbalm.mission.repository.TreasureMissionRepository;
 import com.devocean.Balbalm.mission.domain.MissionInfo;
-import com.devocean.Balbalm.notification.domain.enumeration.NotificationType;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,16 +51,16 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 						.orElseThrow(() -> new CommonException(NOT_FOUND_MISSION));
 
 				UserMissionInfo userMissionInfo = UserMissionInfo.builder()
-					.missionId(missionId)
-					.userMissionId(treasureMission.getId())
-					.missionName(locationMission.getMissionName())
-					.missionType(locationMission.getMissionType())
-					.count(1)
-					.percent(100)
-					.missionProgressType(treasureMission.getProgressType())
-					.isComplete(treasureMission.isComplete())
-					.completeDate(treasureMission.getCompleteDate() != null ? treasureMission.getCompleteDate().toLocalDate() : null)
-					.build();
+						.missionId(missionId)
+						.userMissionId(treasureMission.getId())
+						.missionName(locationMission.getMissionName())
+						.missionType(locationMission.getMissionType())
+						.count(1)
+						.percent(100)
+						.missionProgressType(treasureMission.getProgressType())
+						.isComplete(treasureMission.isComplete())
+						.completeDate(treasureMission.getCompleteDate() != null ? treasureMission.getCompleteDate().toLocalDate() : null)
+						.build();
 
 				userMissionInfoList.add(userMissionInfo);
 
@@ -73,16 +71,16 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 				}
 
 				UserMissionInfo userMissionInfo = UserMissionInfo.builder()
-					.missionId(missionId)
-					.userMissionId(landMarkMission.getId())
-					.missionName(locationMission.getMissionName())
-					.missionType(locationMission.getMissionType())
-					.count(landMarkMission.getCount())
-					.percent(landMarkMission.getPercent())
-					.missionProgressType(landMarkMission.getProgressType())
-					.isComplete(landMarkMission.isComplete())
-					.completeDate(landMarkMission.getCompleteDate() != null ? landMarkMission.getCompleteDate().toLocalDate() : null)
-					.build();
+						.missionId(missionId)
+						.userMissionId(landMarkMission.getId())
+						.missionName(locationMission.getMissionName())
+						.missionType(locationMission.getMissionType())
+						.count(landMarkMission.getCount())
+						.percent(landMarkMission.getPercent())
+						.missionProgressType(landMarkMission.getProgressType())
+						.isComplete(landMarkMission.isComplete())
+						.completeDate(landMarkMission.getCompleteDate() != null ? landMarkMission.getCompleteDate().toLocalDate() : null)
+						.build();
 
 				userMissionInfoList.add(userMissionInfo);
 			}
@@ -103,19 +101,19 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 	public UserMissionInfo getUserMissionInfo(String userId, MissionType missionType, Long missionId) {
 		if (MissionType.TREASURE_HUNT.equals(missionType)) {
 			TreasureMission treasureMission = treasureMissionRepository.findByUserIdAndLocationMissionId(userId, missionId)
-				.orElseThrow(() -> new CommonException(NOT_FOUND_MISSION));
+					.orElseThrow(() -> new CommonException(NOT_FOUND_MISSION));
 
 			return UserMissionInfo.builder()
-				.missionId(missionId)
-				.userMissionId(treasureMission.getId())
-				// .missionName(locationMission.getMissionName())
-				.missionType(missionType)
-				.count(1)
-				.percent(100)
-				.missionProgressType(treasureMission.getProgressType())
-				.isComplete(treasureMission.isComplete())
-				.completeDate(treasureMission.getCompleteDate() != null ? treasureMission.getCompleteDate().toLocalDate() : null)
-				.build();
+					.missionId(missionId)
+					.userMissionId(treasureMission.getId())
+					// .missionName(locationMission.getMissionName())
+					.missionType(missionType)
+					.count(1)
+					.percent(100)
+					.missionProgressType(treasureMission.getProgressType())
+					.isComplete(treasureMission.isComplete())
+					.completeDate(treasureMission.getCompleteDate() != null ? treasureMission.getCompleteDate().toLocalDate() : null)
+					.build();
 
 		} else if (MissionType.LANDMARK.equals(missionType)) {
 			LandMarkMission landMarkMission = landMarkMissionRepository.findByUserIdAndLocationMissionId(userId, missionId);
@@ -124,16 +122,16 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 			}
 
 			return UserMissionInfo.builder()
-				.missionId(missionId)
-				.userMissionId(landMarkMission.getId())
-				// .missionName(locationMission.getMissionName())
-				.missionType(missionType)
-				.count(landMarkMission.getCount())
-				.percent(landMarkMission.getPercent())
-				.missionProgressType(landMarkMission.getProgressType())
-				.isComplete(landMarkMission.isComplete())
-				.completeDate(landMarkMission.getCompleteDate() != null ? landMarkMission.getCompleteDate().toLocalDate() : null)
-				.build();
+					.missionId(missionId)
+					.userMissionId(landMarkMission.getId())
+					// .missionName(locationMission.getMissionName())
+					.missionType(missionType)
+					.count(landMarkMission.getCount())
+					.percent(landMarkMission.getPercent())
+					.missionProgressType(landMarkMission.getProgressType())
+					.isComplete(landMarkMission.isComplete())
+					.completeDate(landMarkMission.getCompleteDate() != null ? landMarkMission.getCompleteDate().toLocalDate() : null)
+					.build();
 		} else {
 			return new UserMissionInfo();
 		}
@@ -147,7 +145,7 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 	@Override
 	public void completeTreasureMission(String userId, Long missionId) {
 		TreasureMission treasureMission = treasureMissionRepository.findByUserIdAndLocationMissionId(userId, missionId)
-			.orElseThrow(() -> new CommonException(NOT_FOUND_MISSION));
+				.orElseThrow(() -> new CommonException(NOT_FOUND_MISSION));
 
 		treasureMission.setProgressType(MissionProgressType.COMPLETE);
 		treasureMission.setComplete(true);
@@ -180,12 +178,12 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 				continue;
 			}
 			treasureMissionList.add(
-				TreasureMission.builder()
-					.userId(userId)
-					.locationMission(targetLocationMission)
-					.progressType(MissionProgressType.PROGRESS)
-					.isComplete(false)
-					.build()
+					TreasureMission.builder()
+							.userId(userId)
+							.locationMission(targetLocationMission)
+							.progressType(MissionProgressType.PROGRESS)
+							.isComplete(false)
+							.build()
 			);
 		}
 
@@ -245,9 +243,9 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 		landMarkMissionRepository.save(landMarkMission);
 	}
 
-	private static double getDistance(double lat1, double lon1, double lat2, double lon2){
+	private static double getDistance(double lat1, double lon1, double lat2, double lon2) {
 		double theta = lon1 - lon2;
-		double dist = Math.sin(deg2rad(lat1))* Math.sin(deg2rad(lat2)) + Math.cos(deg2rad(lat1))*Math.cos(deg2rad(lat2))*Math.cos(deg2rad(theta));
+		double dist = Math.sin(deg2rad(lat1)) * Math.sin(deg2rad(lat2)) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.cos(deg2rad(theta));
 
 		dist = Math.acos(dist);
 		dist = rad2deg(dist);
@@ -258,11 +256,12 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 	}
 
 	// 10진수를 radian 으로 변환
-	private static double deg2rad(double deg){
+	private static double deg2rad(double deg) {
 		return (deg * Math.PI / 180.0);
 	}
+
 	// radian 을 10진수로 변환
-	private static double rad2deg(double rad){
+	private static double rad2deg(double rad) {
 		return (rad * 180 / Math.PI);
 	}
 
@@ -298,7 +297,8 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 			List<Long> locationMissionIds = locationMissionRepository.findByMissionTypeAndCurrentDate(today, MissionType.TREASURE_HUNT)
 					.stream().map(LocationMission::getId).toList();
 			List<LandMarkMission> landMarkMissionList = landMarkMissionRepository.findAllByUserIdAndLocationMissionIds(userId, locationMissionIds);
-
+//			List<LandMarkMissionDto> landMarkMissionList = landMarkMissionRepository.findAllByUserIdAndLocationMissionIds(userId, locationMissionIds);
+//
 			landMarkMissionList.stream()
 					.map(landMarkMission -> userMissionInfoList.add(
 							UserMissionInfo.builder()
@@ -320,6 +320,7 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 	@Mapper
 	public interface MissionDataProviderImplMapper {
 		MissionDataProviderImpl.MissionDataProviderImplMapper MAPPER = Mappers.getMapper(MissionDataProviderImpl.MissionDataProviderImplMapper.class);
+
 		@Mapping(target = "missionId", source = "id")
 		MissionInfo toMissionInfo(LocationMission locationMission);
 

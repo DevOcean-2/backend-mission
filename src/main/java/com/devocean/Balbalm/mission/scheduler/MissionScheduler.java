@@ -19,7 +19,7 @@ public class MissionScheduler {
     /**
      * 하루 주기로 새로운 미션 정보를 유저에게 할당 -> treasureMission, landmarkMission 에 정보 추가
      */
-    @Scheduled(cron = "0 12 * * *")
+//    @Scheduled(cron = "0 12 * * * *")
     public void sendTreasureHuntInfo() {
         log.info("================= start assign new mission for all users =================");
         LocalDate now = LocalDate.now();

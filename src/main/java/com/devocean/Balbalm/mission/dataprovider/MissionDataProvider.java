@@ -6,7 +6,6 @@ import java.util.List;
 import com.devocean.Balbalm.mission.domain.UserMissionInfo;
 import com.devocean.Balbalm.mission.domain.enumeration.MissionType;
 import com.devocean.Balbalm.mission.domain.MissionInfo;
-import com.devocean.Balbalm.notification.domain.enumeration.NotificationType;
 
 public interface MissionDataProvider {
 	List<UserMissionInfo> getMissionList(String userId, LocalDate today);

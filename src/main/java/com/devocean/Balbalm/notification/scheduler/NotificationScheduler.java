@@ -21,7 +21,7 @@ public class NotificationScheduler {
     /**
      * 보물찾기 미션 정보를 지속적으로 전달
      */
-    @Scheduled(cron = "*/20 * * * * *")
+//    @Scheduled(cron = "*/20 * * * * *")
     public void sendTreasureHuntInfo() {
         log.info("================= start send treasure hunt info =================");
         Set<String> keys = emitterRepository.findAllUserKey();
@@ -33,7 +33,7 @@ public class NotificationScheduler {
     /**
      * 랜드마크 방문 미션 정보를 지속적으로 전달
      */
-    @Scheduled(cron = "*/20 * * * * *")
+//    @Scheduled(cron = "*/20 * * * * *")
     public void sendLandMarkVisitInfo() {
         log.info("================= start send landmark visit info =================");
         Set<String> keys = emitterRepository.findAllUserKey();

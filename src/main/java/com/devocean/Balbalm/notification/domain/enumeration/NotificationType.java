@@ -6,10 +6,13 @@ import lombok.Getter;
 
 @Getter
 public enum NotificationType {
-    TREASURE_HUNT,
-    LANDMARK,
-    FEED,
-    DISCONNECT;
+    MISSION,
+    FEED
+//    TREASURE_HUNT,
+//    LANDMARK,
+//    FEED,
+//    DISCONNECT;
+    ;
 
     public static NotificationType findNotificationType(String type) {
         return Arrays.stream(values())
