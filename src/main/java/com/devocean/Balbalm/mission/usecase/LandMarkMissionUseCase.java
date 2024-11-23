@@ -1,6 +1,5 @@
 package com.devocean.Balbalm.mission.usecase;
 
-import static com.devocean.Balbalm.global.enumeration.ResultCode.ALREADY_COMPLETE_MISSION;
 import static com.devocean.Balbalm.mission.domain.enumeration.TreasureHuntMissionProgressType.*;
 
 import java.io.Serializable;
@@ -8,7 +7,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.devocean.Balbalm.global.exception.CommonException;
+import com.devocean.Balbalm.notification.dataprovider.NotificationDataProvider;
 import org.springframework.stereotype.Component;
 
 import com.devocean.Balbalm.global.UseCase;
@@ -27,15 +26,19 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class LandMarkMissionUseCase implements UseCase<LandMarkMissionUseCase.Command, LandMarkMissionUseCase.Result> {
+
 	private final MissionDataProvider missionDataProvider;
+	private final NotificationDataProvider notificationDataProvider;
 	private final JwtUtil jwtUtil;
 
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public Result execute(Command input) {
 		String userId = jwtUtil.extractSocialId(input.getToken());
@@ -53,19 +56,19 @@ public class LandMarkMissionUseCase implements UseCase<LandMarkMissionUseCase.Co
 			Long missionId = missionInfo.getMissionId();
 
 			UserMissionInfo userMissionInfo = missionDataProvider.getUserMissionInfo(userId, missionType, missionInfo.getMissionId());
-			if (userMissionInfo.isComplete()) {
-				throw new CommonException(ALREADY_COMPLETE_MISSION);
-			}
+//			if (userMissionInfo.isComplete()) {
+//				throw new CommonException(ALREADY_COMPLETE_MISSION);
+//			}
 
 			double distance = missionDataProvider.getMissionDistance(currentLatitude, currentLongitude, missionInfo.getLatitude(), missionInfo.getLongitude());
 			int calDistance = (int) distance;
 
 			boolean isComplete = false;
-			if (calDistance <= HUNDRED.getDistance()) {
+			if (calDistance <= TWO_HUNDRED.getDistance()) {
 				isComplete = true;
-			} else if (calDistance <= TWO_HUNDRED.getDistance()) {
-
 			} else if (calDistance <= FIVE_HUNDRED.getDistance()) {
+
+			} else if (calDistance <= ONE_THOUSAND.getDistance()) {
 
 			} else {
 
@@ -78,6 +81,13 @@ public class LandMarkMissionUseCase implements UseCase<LandMarkMissionUseCase.Co
 
 			// 업데이트된 미션 수행 정보
 			UserMissionInfo updateUserMissionInfo = missionDataProvider.getUserMissionInfo(userId, missionType, missionId);
+
+			// 미션 완료일 경우
+			if (updateUserMissionInfo.isComplete()) {
+				notificationDataProvider.saveNotification(userId, MissionType.LANDMARK, missionId, updateUserMissionInfo.getLocationName(),
+						updateUserMissionInfo.getMissionName(), updateUserMissionInfo.getPercent(), updateUserMissionInfo.isComplete());
+			}
+
 			missionList.add(
 					Result.Mission.builder()
 							.isComplete(updateUserMissionInfo.isComplete())

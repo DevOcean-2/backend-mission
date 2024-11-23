@@ -8,5 +8,5 @@ import com.devocean.Balbalm.notification.domain.entity.Notification;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
-	List<Notification> findAllByToUserId(String userId);
+	List<Notification> findAllByToUserIdOrderByIdDesc(String userId);
 }

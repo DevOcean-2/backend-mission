@@ -1,6 +1,5 @@
 package com.devocean.Balbalm.mission.usecase;
 
-import static com.devocean.Balbalm.global.enumeration.ResultCode.ALREADY_COMPLETE_MISSION;
 import static com.devocean.Balbalm.mission.domain.enumeration.TreasureHuntMissionProgressType.*;
 
 import java.io.Serializable;
@@ -8,8 +7,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.devocean.Balbalm.global.exception.CommonException;
 import com.devocean.Balbalm.mission.domain.UserMissionInfo;
+import com.devocean.Balbalm.notification.dataprovider.NotificationDataProvider;
 import org.springframework.stereotype.Component;
 
 import com.devocean.Balbalm.global.UseCase;
@@ -28,14 +27,18 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class TreasureHuntMissionUseCase implements UseCase<TreasureHuntMissionUseCase.Command, TreasureHuntMissionUseCase.Result> {
+
 	private final MissionDataProvider missionDataProvider;
+	private final NotificationDataProvider notificationDataProvider;
 	private final JwtUtil jwtUtil;
 
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public Result execute(Command input) {
 		String userId = jwtUtil.extractSocialId(input.getToken());
@@ -46,15 +49,14 @@ public class TreasureHuntMissionUseCase implements UseCase<TreasureHuntMissionUs
 		MissionType missionType = input.getMissionType();
 		List<MissionInfo> missionInfoList = missionDataProvider.getMissionInfoList(today, missionType);
 
-
 		List<Result.Mission> missionList = new ArrayList<>();
 		for (MissionInfo missionInfo : missionInfoList) {
 			Long missionId = missionInfo.getMissionId();
 
 			UserMissionInfo userMissionInfo = missionDataProvider.getUserMissionInfo(userId, missionType, missionId);
-			if (userMissionInfo.isComplete()) {
-				throw new CommonException(ALREADY_COMPLETE_MISSION);
-			}
+//			if (userMissionInfo.isComplete()) {
+//				throw new CommonException(ALREADY_COMPLETE_MISSION);
+//			}
 
 			double distance = missionDataProvider.getMissionDistance(currentLatitude, currentLongitude, missionInfo.getLatitude(), missionInfo.getLongitude());
 			int calDistance = (int) distance;
@@ -79,6 +81,10 @@ public class TreasureHuntMissionUseCase implements UseCase<TreasureHuntMissionUs
 			if (isComplete) {
 				missionProgressType = MissionProgressType.COMPLETE;
 				missionDataProvider.completeTreasureMission(userId, missionId);
+				
+				// 미션 알림 쌓기
+				notificationDataProvider.saveNotification(userId, MissionType.TREASURE_HUNT, missionId,
+						userMissionInfo.getLocationName(), userMissionInfo.getMissionName(), userMissionInfo.getPercent(), true);
 			}
 
 			missionList.add(

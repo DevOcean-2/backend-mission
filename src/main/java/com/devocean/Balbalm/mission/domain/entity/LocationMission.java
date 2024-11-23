@@ -34,7 +34,7 @@ public class LocationMission extends BaseEntity {
 	@Column(name = "location_name")
 	private String locationName;
 
-	@Column(name = "missionName_name")
+	@Column(name = "mission_name")
 	private String missionName;
 
 	@Column(name = "description")

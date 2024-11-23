@@ -55,8 +55,7 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 						.userMissionId(treasureMission.getId())
 						.missionName(locationMission.getMissionName())
 						.missionType(locationMission.getMissionType())
-						.count(1)
-						.percent(100)
+						.percent(treasureMission.getPercent())
 						.missionProgressType(treasureMission.getProgressType())
 						.isComplete(treasureMission.isComplete())
 						.completeDate(treasureMission.getCompleteDate() != null ? treasureMission.getCompleteDate().toLocalDate() : null)
@@ -106,7 +105,8 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 			return UserMissionInfo.builder()
 					.missionId(missionId)
 					.userMissionId(treasureMission.getId())
-					// .missionName(locationMission.getMissionName())
+					.locationName(treasureMission.getLocationMission().getLocationName())
+					.missionName(treasureMission.getLocationMission().getMissionName())
 					.missionType(missionType)
 					.count(1)
 					.percent(100)
@@ -124,7 +124,8 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 			return UserMissionInfo.builder()
 					.missionId(missionId)
 					.userMissionId(landMarkMission.getId())
-					// .missionName(locationMission.getMissionName())
+					.locationName(landMarkMission.getLocationMission().getLocationName())
+					.missionName(landMarkMission.getLocationMission().getMissionName())
 					.missionType(missionType)
 					.count(landMarkMission.getCount())
 					.percent(landMarkMission.getPercent())
@@ -152,6 +153,7 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 		treasureMission.setCompleteDate(LocalDateTime.now());
 
 		treasureMissionRepository.save(treasureMission);
+		treasureMissionRepository.flush();
 	}
 
 	@Override
@@ -226,8 +228,9 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 	@Override
 	public void updateLandMarkMissionCount(String userId, Long missionId) {
 		LandMarkMission landMarkMission = landMarkMissionRepository.findByUserIdAndLocationMissionId(userId, missionId);
-		if (!ObjectUtils.isEmpty(landMarkMission)) {
-			throw new CommonException(NOT_FOUND_MISSION);
+		if (ObjectUtils.isEmpty(landMarkMission)) {
+//			throw new CommonException(NOT_FOUND_MISSION);
+			return;
 		}
 
 		int plusCount = landMarkMission.getCount() + 1;
@@ -241,6 +244,7 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 		}
 
 		landMarkMissionRepository.save(landMarkMission);
+		landMarkMissionRepository.flush();
 	}
 
 	private static double getDistance(double lat1, double lon1, double lat2, double lon2) {
@@ -283,7 +287,8 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 							UserMissionInfo.builder()
 									.missionId(treasureMission.getLocationMission().getId())
 									.userMissionId(treasureMission.getId())
-									// .missionName(locationMission.getMissionName())
+									.locationName(treasureMission.getLocationMission().getLocationName())
+									.missionName(treasureMission.getLocationMission().getMissionName())
 									.missionType(treasureMission.getLocationMission().getMissionType())
 									.count(1)
 									.percent(treasureMission.getPercent())
@@ -291,8 +296,8 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 									.isComplete(treasureMission.isComplete())
 									.completeDate(treasureMission.getCompleteDate() != null ? treasureMission.getCompleteDate().toLocalDate() : null)
 									.build()
-					));
-
+								)
+					);
 		} else if (MissionType.LANDMARK.equals(missionType)) {
 			List<Long> locationMissionIds = locationMissionRepository.findByMissionTypeAndCurrentDate(today, MissionType.TREASURE_HUNT)
 					.stream().map(LocationMission::getId).toList();
@@ -304,7 +309,8 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 							UserMissionInfo.builder()
 									.missionId(landMarkMission.getLocationMission().getId())
 									.userMissionId(landMarkMission.getId())
-									// .missionName(locationMission.getMissionName())
+									.locationName(landMarkMission.getLocationMission().getLocationName())
+									.missionName(landMarkMission.getLocationMission().getMissionName())
 									.missionType(landMarkMission.getLocationMission().getMissionType())
 									.count(landMarkMission.getCount())
 									.percent(landMarkMission.getPercent())

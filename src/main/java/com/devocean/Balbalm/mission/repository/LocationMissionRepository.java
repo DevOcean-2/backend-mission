@@ -4,11 +4,13 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.devocean.Balbalm.mission.domain.entity.LocationMission;
 import com.devocean.Balbalm.mission.domain.enumeration.MissionType;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface LocationMissionRepository extends JpaRepository<LocationMission, Long> {
 	@Query("SELECT m FROM LocationMission m WHERE :currentDate BETWEEN m.startDate AND m.endDate")
@@ -21,6 +23,8 @@ public interface LocationMissionRepository extends JpaRepository<LocationMission
 	@Query("SELECT m FROM LocationMission m WHERE :currentDate BETWEEN m.startDate AND m.endDate AND m.completeAssign = :completeAssign ")
 	List<LocationMission> findByCurrentDateAndCompleteAssign(@Param("currentDate") LocalDate currentDate, @Param("completeAssign") boolean completeAssign);
 
+	@Transactional
+	@Modifying
 	@Query("UPDATE LocationMission m SET m.completeAssign = true WHERE m.id IN :missionIds")
 	void updateMissionCompleteAssign(@Param("missionIds") List<Long> missionIds);
 }
