@@ -23,6 +23,7 @@ public class UserMissionInfo {
 	private Long userMissionId;
 
 	private MissionType missionType;
+	private String locationName;
 	private String missionName;
 
 	private int count;

@@ -34,7 +34,7 @@ public class LocationMission extends BaseEntity {
 	@Column(name = "location_name")
 	private String locationName;
 
-	@Column(name = "missionName_name")
+	@Column(name = "mission_name")
 	private String missionName;
 
 	@Column(name = "description")
@@ -54,4 +54,7 @@ public class LocationMission extends BaseEntity {
 
 	@Column(name = "end_date")
 	private LocalDate endDate;
+
+	@Column(name = "complete_assign")
+	private boolean completeAssign;
 }

@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 public class GetMissionListUseCase implements UseCase<GetMissionListUseCase.Command, GetMissionListUseCase.Result> {
 	private final MissionDataProvider missionDataProvider;
 	private final JwtUtil jwtUtil;
+
 	@Override
 	public Result execute(Command input) {
 		LocalDate today = LocalDate.now();

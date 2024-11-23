@@ -42,6 +42,9 @@ public class TreasureMission extends BaseEntity {
 	@Column(name = "user_id")
 	private String userId;
 
+	@Column(name = "percent")
+	private int percent;
+
 	@Column(name = "progress_type")
 	@Enumerated(EnumType.STRING)
 	private MissionProgressType progressType = MissionProgressType.READY;

@@ -1,13 +1,14 @@
 package com.devocean.Balbalm.mission.usecase;
 
-import static com.devocean.Balbalm.global.enumeration.ResultCode.ALREADY_COMPLETE_MISSION;
 import static com.devocean.Balbalm.mission.domain.enumeration.TreasureHuntMissionProgressType.*;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
-import com.devocean.Balbalm.global.exception.CommonException;
 import com.devocean.Balbalm.mission.domain.UserMissionInfo;
+import com.devocean.Balbalm.notification.dataprovider.NotificationDataProvider;
 import org.springframework.stereotype.Component;
 
 import com.devocean.Balbalm.global.UseCase;
@@ -26,13 +27,18 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class TreasureHuntMissionUseCase implements UseCase<TreasureHuntMissionUseCase.Command, TreasureHuntMissionUseCase.Result> {
+
 	private final MissionDataProvider missionDataProvider;
+	private final NotificationDataProvider notificationDataProvider;
 	private final JwtUtil jwtUtil;
+
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public Result execute(Command input) {
 		String userId = jwtUtil.extractSocialId(input.getToken());
@@ -41,46 +47,60 @@ public class TreasureHuntMissionUseCase implements UseCase<TreasureHuntMissionUs
 		double currentLongitude = input.getLongitude();
 
 		MissionType missionType = input.getMissionType();
-		MissionInfo missionInfo = missionDataProvider.getMissionInfo(today, missionType);
-		Long missionId = missionInfo.getMissionId();
+		List<MissionInfo> missionInfoList = missionDataProvider.getMissionInfoList(today, missionType);
 
-		UserMissionInfo userMissionInfo = missionDataProvider.getUserMissionInfo(userId, missionType, missionId);
-		if (userMissionInfo.isComplete()) {
-			throw new CommonException(ALREADY_COMPLETE_MISSION);
-		}
+		List<Result.Mission> missionList = new ArrayList<>();
+		for (MissionInfo missionInfo : missionInfoList) {
+			Long missionId = missionInfo.getMissionId();
 
-		double distance = missionDataProvider.getMissionDistance(currentLatitude, currentLongitude, missionInfo.getLatitude(), missionInfo.getLongitude());
-		int calDistance = (int) distance;
+			UserMissionInfo userMissionInfo = missionDataProvider.getUserMissionInfo(userId, missionType, missionId);
+//			if (userMissionInfo.isComplete()) {
+//				throw new CommonException(ALREADY_COMPLETE_MISSION);
+//			}
 
-		TreasureHuntMissionProgressType progressType = NONE;
-		boolean isComplete = false;
+			double distance = missionDataProvider.getMissionDistance(currentLatitude, currentLongitude, missionInfo.getLatitude(), missionInfo.getLongitude());
+			int calDistance = (int) distance;
 
-		if (calDistance <= HUNDRED.getDistance()) {
-			isComplete = true;
-			progressType = HUNDRED;
-		} else if (calDistance <= TWO_HUNDRED.getDistance()) {
-			progressType = TWO_HUNDRED;
-		} else if (calDistance <= FIVE_HUNDRED.getDistance()) {
-			progressType = FIVE_HUNDRED;
-		} else if (calDistance <= ONE_THOUSAND.getDistance()) {
-			progressType = ONE_THOUSAND;
-		}
-		int percent = progressType.getPercent();
+			TreasureHuntMissionProgressType progressType = NONE;
+			boolean isComplete = false;
 
-		// 방문 성공인 경우 방문 성공 횟수를 기록
-		MissionProgressType missionProgressType = MissionProgressType.PROGRESS;
-		if (isComplete) {
-			missionProgressType = MissionProgressType.COMPLETE;
-			missionDataProvider.completeTreasureMission(userId, missionId);
+			if (calDistance <= HUNDRED.getDistance()) {
+				isComplete = true;
+				progressType = HUNDRED;
+			} else if (calDistance <= TWO_HUNDRED.getDistance()) {
+				progressType = TWO_HUNDRED;
+			} else if (calDistance <= FIVE_HUNDRED.getDistance()) {
+				progressType = FIVE_HUNDRED;
+			} else if (calDistance <= ONE_THOUSAND.getDistance()) {
+				progressType = ONE_THOUSAND;
+			}
+			int percent = progressType.getPercent();
+
+			// 방문 성공인 경우 방문 성공 횟수를 기록
+			MissionProgressType missionProgressType = MissionProgressType.PROGRESS;
+			if (isComplete) {
+				missionProgressType = MissionProgressType.COMPLETE;
+				missionDataProvider.completeTreasureMission(userId, missionId);
+				
+				// 미션 알림 쌓기
+				notificationDataProvider.saveNotification(userId, MissionType.TREASURE_HUNT, missionId,
+						userMissionInfo.getLocationName(), userMissionInfo.getMissionName(), userMissionInfo.getPercent(), true);
+			}
+
+			missionList.add(
+					Result.Mission.builder()
+							.isComplete(isComplete)
+							.missionProgressType(missionProgressType)
+							.percent(percent)
+							.message(progressType.getMessage())
+							.distance(distance)
+							.build()
+			);
 		}
 
 		return Result.builder()
-			.isComplete(isComplete)
-			.missionProgressType(missionProgressType)
-			.percent(percent)
-			.message(progressType.getMessage())
-			.distance(distance)
-			.build();
+				.missionList(missionList)
+				.build();
 	}
 
 	@Getter
@@ -103,10 +123,20 @@ public class TreasureHuntMissionUseCase implements UseCase<TreasureHuntMissionUs
 	@AllArgsConstructor
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class Result implements Serializable, UseCase.Result {
-		private boolean isComplete;   // 완료 여부
-		private MissionProgressType missionProgressType;   // 미션 진행 상태
-		private int percent;
-		private String message;
-		private double distance;
+		private List<Mission> missionList;
+
+		@Getter
+		@Setter
+		@Builder
+		@NoArgsConstructor
+		@AllArgsConstructor
+		@JsonIgnoreProperties(ignoreUnknown = true)
+		public static class Mission {
+			private boolean isComplete;   // 완료 여부
+			private MissionProgressType missionProgressType;   // 미션 진행 상태
+			private int percent;
+			private String message;
+			private double distance;
+		}
 	}
 }

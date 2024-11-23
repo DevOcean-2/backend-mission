@@ -6,19 +6,19 @@ import com.devocean.Balbalm.notification.domain.enumeration.NotificationStatus;
 import com.devocean.Balbalm.notification.domain.enumeration.NotificationType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
+@Builder
 @Entity
-@Table(name = "notification")
+@Table(name = "mission_notification")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class Notification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "notification_id")
+    @Column(name = "mission_notification_id")
     private Long id;
 
     @Column(name = "to_user_id")
