@@ -58,12 +58,14 @@ public class FeedMissionService {
 					return Mono.just(false);
 				}
 
-				FeedMissionUser missionStatus = FeedMissionUser.builder()
-					.feedMissionId(missionId)
-					.userId(userId)
-					.percent(100)
-					.build();
-				feedMissionUserRepository.save(missionStatus);
+				if (!feedMissionUserRepository.existsByFeedMissionIdAndUserId(missionId, userId)) {
+					FeedMissionUser missionStatus = FeedMissionUser.builder()
+						.feedMissionId(missionId)
+						.userId(userId)
+						.percent(100)
+						.build();
+					feedMissionUserRepository.save(missionStatus);
+				}
 				return Mono.just(true);
 			});
 	}
