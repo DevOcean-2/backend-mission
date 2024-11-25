@@ -7,4 +7,5 @@ import com.devocean.Balbalm.feedMission.entity.FeedMissionUser;
 
 @Repository
 public interface FeedMissionUserRepository extends JpaRepository<FeedMissionUser, Long> {
+	boolean existsByFeedMissionIdAndUserId(Long feedMissionId, String userId);
 }
