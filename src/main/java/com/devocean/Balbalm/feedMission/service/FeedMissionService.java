@@ -80,9 +80,12 @@ public class FeedMissionService {
 			.collectList();
 	}
 
-	public MissionResponseDto getMissionByMonth(int year, int month) {
+	public MissionResponseDto getMissionByMonth(int year, int month, String token) {
 		FeedMission mission = feedMissionRepository.findByYearAndMonth(year, month)
 			.orElseThrow(() -> new RuntimeException("Mission Not Found"));
+
+		String userId = jwtUtil.extractSocialId(token);
+		boolean isDone = feedMissionUserRepository.existsByFeedMissionIdAndUserId(mission.getId(), userId);
 
 		List<String> hashtags = mission.getHashTags().stream()
 			.map(hashTag -> hashTag.getName()).collect(Collectors.toList());
@@ -92,6 +95,7 @@ public class FeedMissionService {
 			.hashtag(hashtags)
 			.mission(mission.getContent())
 			.missionId(mission.getId())
+			.isDone(isDone)
 			.build();
 	}
 }

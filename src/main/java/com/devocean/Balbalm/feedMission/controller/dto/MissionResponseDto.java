@@ -17,4 +17,5 @@ public class MissionResponseDto {
 	private int month;
 	private int year;
 	private Long missionId;
+	private boolean isDone;
 }
