@@ -148,6 +148,7 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 		TreasureMission treasureMission = treasureMissionRepository.findByUserIdAndLocationMissionId(userId, missionId)
 				.orElseThrow(() -> new CommonException(NOT_FOUND_MISSION));
 
+		treasureMission.setPercent(100);
 		treasureMission.setProgressType(MissionProgressType.COMPLETE);
 		treasureMission.setComplete(true);
 		treasureMission.setCompleteDate(LocalDateTime.now());
@@ -272,55 +273,54 @@ public class MissionDataProviderImpl implements MissionDataProvider {
 	@Override
 	public List<UserMissionInfo> getUserMissionInfoList(String userId, MissionType missionType) {
 		LocalDate today = LocalDate.now();
-		LocalDate startDate = LocalDate.of(today.getYear(), today.getMonth(), 1);
-		LocalDate endDate = LocalDate.of(today.getYear(), today.getMonth(), today.lengthOfMonth());
-
-		List<UserMissionInfo> userMissionInfoList = new ArrayList<>();
 
 		if (MissionType.TREASURE_HUNT.equals(missionType)) {
 			List<Long> locationMissionIds = locationMissionRepository.findByMissionTypeAndCurrentDate(today, MissionType.TREASURE_HUNT)
 					.stream().map(LocationMission::getId).toList();
 			List<TreasureMission> treasureMissionList = treasureMissionRepository.findAllByUserIdAndLocationMissionIds(userId, locationMissionIds);
 
-			treasureMissionList.stream()
-					.map(treasureMission -> userMissionInfoList.add(
+			return treasureMissionList.stream()
+					.map(treasureMission ->
 							UserMissionInfo.builder()
 									.missionId(treasureMission.getLocationMission().getId())
 									.userMissionId(treasureMission.getId())
 									.locationName(treasureMission.getLocationMission().getLocationName())
 									.missionName(treasureMission.getLocationMission().getMissionName())
 									.missionType(treasureMission.getLocationMission().getMissionType())
+									.latitude(treasureMission.getLocationMission().getLatitude())
+									.longitude(treasureMission.getLocationMission().getLongitude())
 									.count(1)
 									.percent(treasureMission.getPercent())
 									.missionProgressType(treasureMission.getProgressType())
 									.isComplete(treasureMission.isComplete())
 									.completeDate(treasureMission.getCompleteDate() != null ? treasureMission.getCompleteDate().toLocalDate() : null)
 									.build()
-								)
-					);
+					).toList();
+
 		} else if (MissionType.LANDMARK.equals(missionType)) {
-			List<Long> locationMissionIds = locationMissionRepository.findByMissionTypeAndCurrentDate(today, MissionType.TREASURE_HUNT)
+			List<Long> locationMissionIds = locationMissionRepository.findByMissionTypeAndCurrentDate(today, MissionType.LANDMARK)
 					.stream().map(LocationMission::getId).toList();
 			List<LandMarkMission> landMarkMissionList = landMarkMissionRepository.findAllByUserIdAndLocationMissionIds(userId, locationMissionIds);
-//			List<LandMarkMissionDto> landMarkMissionList = landMarkMissionRepository.findAllByUserIdAndLocationMissionIds(userId, locationMissionIds);
-//
-			landMarkMissionList.stream()
-					.map(landMarkMission -> userMissionInfoList.add(
+
+			return landMarkMissionList.stream()
+					.map(landMarkMission ->
 							UserMissionInfo.builder()
 									.missionId(landMarkMission.getLocationMission().getId())
 									.userMissionId(landMarkMission.getId())
 									.locationName(landMarkMission.getLocationMission().getLocationName())
 									.missionName(landMarkMission.getLocationMission().getMissionName())
 									.missionType(landMarkMission.getLocationMission().getMissionType())
+									.latitude(landMarkMission.getLocationMission().getLatitude())
+									.longitude(landMarkMission.getLocationMission().getLongitude())
 									.count(landMarkMission.getCount())
 									.percent(landMarkMission.getPercent())
 									.missionProgressType(landMarkMission.getProgressType())
 									.isComplete(landMarkMission.isComplete())
 									.completeDate(landMarkMission.getCompleteDate() != null ? landMarkMission.getCompleteDate().toLocalDate() : null)
 									.build()
-					));
+					).toList();
 		}
-		return userMissionInfoList;
+		return new ArrayList<>();
 	}
 
 	@Mapper

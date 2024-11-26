@@ -9,6 +9,7 @@ import java.util.List;
 
 import com.devocean.Balbalm.mission.domain.UserMissionInfo;
 import com.devocean.Balbalm.notification.dataprovider.NotificationDataProvider;
+import com.devocean.Balbalm.notification.service.NotificationService;
 import org.springframework.stereotype.Component;
 
 import com.devocean.Balbalm.global.UseCase;
@@ -36,6 +37,7 @@ public class TreasureHuntMissionUseCase implements UseCase<TreasureHuntMissionUs
 
 	private final MissionDataProvider missionDataProvider;
 	private final NotificationDataProvider notificationDataProvider;
+	private final NotificationService notificationService;
 	private final JwtUtil jwtUtil;
 
 	@Transactional(rollbackFor = Exception.class)
@@ -85,6 +87,9 @@ public class TreasureHuntMissionUseCase implements UseCase<TreasureHuntMissionUs
 				// 미션 알림 쌓기
 				notificationDataProvider.saveNotification(userId, MissionType.TREASURE_HUNT, missionId,
 						userMissionInfo.getLocationName(), userMissionInfo.getMissionName(), userMissionInfo.getPercent(), true);
+
+				// 알림 전송
+				notificationService.sendTreasureHuntInfo(userId);
 			}
 
 			missionList.add(

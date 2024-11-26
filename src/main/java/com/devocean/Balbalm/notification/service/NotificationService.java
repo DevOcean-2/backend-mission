@@ -2,7 +2,6 @@ package com.devocean.Balbalm.notification.service;
 
 import com.devocean.Balbalm.global.enumeration.ResultCode;
 import com.devocean.Balbalm.global.exception.CommonException;
-import com.devocean.Balbalm.global.util.JwtUtil;
 import com.devocean.Balbalm.mission.dataprovider.MissionDataProvider;
 import com.devocean.Balbalm.mission.domain.UserMissionInfo;
 import com.devocean.Balbalm.mission.domain.enumeration.MissionType;
@@ -32,14 +31,12 @@ public class NotificationService {
     private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60;   // 기본 타임아웃 60분
     private final EmitterRepository emitterRepository;
     private final MissionDataProvider missionDataProvider;
-    private final JwtUtil jwtUtil;
 
     @Transactional
     public SseEmitter subscribe(String userId, MissionType missionType) {
         ConnectMessage connectMessage = connect(userId, missionType);
-        // MissionInfo missionInfo = missionDataProvider.getMissionInfo(userId, notificationType);
         sendMessage(userId, new EventMessage(missionType, connectMessage));
-        // EmitterInfo emitterInfo = emitterRepository.get(connectMessage.getMissionInfo().getUserId());
+
         EmitterInfo emitterInfo = emitterRepository.get(userId);
 
         if (ObjectUtils.isEmpty(emitterInfo)) {
@@ -50,8 +47,6 @@ public class NotificationService {
     }
 
     private ConnectMessage connect(String userId, MissionType missionType) {
-
-//        MissionInfo missionInfo = missionDataProvider.getMissionInfo(userId, notificationType);
         List<UserMissionInfo> userMissionInfoList = missionDataProvider.getUserMissionInfoList(userId, missionType);
 
         SseEmitter emitter = new SseEmitter(DEFAULT_TIMEOUT);
@@ -111,11 +106,6 @@ public class NotificationService {
         if (!ObjectUtils.isEmpty(emitterInfo)) {
             try {
                 MissionType type = MissionType.TREASURE_HUNT;
-//                MissionInfo missionInfo = missionDataProvider.getMissionInfo(userId, type);
-//                sendMessage(userId,
-//                        new EventMessage(NotificationType.TREASURE_HUNT,
-//                                new MissionInfoUpdateMessage(missionInfo)));
-//                log.info("update missionInfo name {}", missionInfo.getMissionName());
                 List<UserMissionInfo> userMissionInfoList = missionDataProvider.getUserMissionInfoList(userId, type);
                 sendMessage(userId,
                         new EventMessage(type,
@@ -135,11 +125,6 @@ public class NotificationService {
         if (!ObjectUtils.isEmpty(emitterInfo)) {
             try {
                 MissionType type = MissionType.LANDMARK;
-//                MissionInfo missionInfo = missionDataProvider.getMissionInfo(userId, type);
-//                sendMessage(userId,
-//                    new EventMessage(NotificationType.LANDMARK,
-//                        new MissionInfoUpdateMessage(missionInfo)));
-//                log.info("update missionInfo name {}", missionInfo.getMissionName());
                 List<UserMissionInfo> userMissionInfoList = missionDataProvider.getUserMissionInfoList(userId, type);
                 sendMessage(userId,
                         new EventMessage(type,
