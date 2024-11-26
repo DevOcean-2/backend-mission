@@ -7,6 +7,7 @@ import com.devocean.Balbalm.notification.domain.NotificationInfo;
 import com.devocean.Balbalm.notification.domain.entity.NotificationContent;
 import com.devocean.Balbalm.notification.domain.enumeration.NotificationStatus;
 import com.devocean.Balbalm.notification.domain.enumeration.NotificationType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -68,12 +70,14 @@ public class GetNotificationListUseCase implements UseCase<GetNotificationListUs
         @NoArgsConstructor
         @AllArgsConstructor
         @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class Notification{
+        public static class Notification {
             private Long id;
             private String toUserId;
             private NotificationType notificationType;
             private NotificationContent notificationContent;
             private NotificationStatus notificationStatus;
+            @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+            private LocalDateTime createDate;
         }
     }
 

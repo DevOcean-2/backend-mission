@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.devocean.Balbalm.notification.dataprovider.NotificationDataProvider;
+import com.devocean.Balbalm.notification.service.NotificationService;
 import org.springframework.stereotype.Component;
 
 import com.devocean.Balbalm.global.UseCase;
@@ -36,6 +37,7 @@ public class LandMarkMissionUseCase implements UseCase<LandMarkMissionUseCase.Co
 
 	private final MissionDataProvider missionDataProvider;
 	private final NotificationDataProvider notificationDataProvider;
+	private final NotificationService notificationService;
 	private final JwtUtil jwtUtil;
 
 	@Transactional(rollbackFor = Exception.class)
@@ -84,8 +86,12 @@ public class LandMarkMissionUseCase implements UseCase<LandMarkMissionUseCase.Co
 
 			// 미션 완료일 경우
 			if (updateUserMissionInfo.isComplete()) {
+				// 미션 알림 쌓기
 				notificationDataProvider.saveNotification(userId, MissionType.LANDMARK, missionId, updateUserMissionInfo.getLocationName(),
 						updateUserMissionInfo.getMissionName(), updateUserMissionInfo.getPercent(), updateUserMissionInfo.isComplete());
+
+				// 알림 전송
+				notificationService.sendLandMarkInfo(userId);
 			}
 
 			missionList.add(

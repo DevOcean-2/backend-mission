@@ -25,6 +25,8 @@ public class UserMissionInfo {
 	private MissionType missionType;
 	private String locationName;
 	private String missionName;
+	private double latitude;
+	private double longitude;
 
 	private int count;
 	private int percent;
