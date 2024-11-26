@@ -1,5 +1,6 @@
 package com.devocean.Balbalm.notification.domain.entity;
 
+import com.devocean.Balbalm.global.domain.BaseEntity;
 import com.devocean.Balbalm.global.enumeration.ResultCode;
 import com.devocean.Balbalm.global.exception.CommonException;
 import com.devocean.Balbalm.notification.domain.enumeration.NotificationStatus;
@@ -14,7 +15,7 @@ import lombok.*;
 @Table(name = "mission_notification")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class Notification {
+public class Notification extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
