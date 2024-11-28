@@ -29,6 +29,7 @@ public class GetMissionUseCase implements UseCase<GetMissionUseCase.Command, Get
     public Result execute(Command input) {
         String userId = input.getUserId();
         List<UserMissionInfo> userMissionInfoList = missionDataProvider.getUserMissionInfoList(userId, input.getMissionType());
+
         return Result.builder()
                 .userId(userId)
                 .userMissionInfoList(GetMissionUseCaseMapper.MAPPER.toResult(userMissionInfoList))
@@ -82,7 +83,7 @@ public class GetMissionUseCase implements UseCase<GetMissionUseCase.Command, Get
             private int count;
             private int percent;
             private MissionProgressType missionProgressType;
-            private boolean isComplete;
+            private boolean complete;
             private LocalDate completeDate;
         }
     }
